@@ -3,8 +3,10 @@ from pynput import keyboard
 import pyautogui
 
 isOpen = False
+window = None
+
 def onActivate():
-    global isOpen
+    global isOpen, window
     if not isOpen:
         window = tk.Toplevel()
         window.overrideredirect(True)
@@ -17,12 +19,27 @@ def onActivate():
         window.attributes('-topmost', True)
         isOpen = True
 
+def onDeactivate():
+    global isOpen, window
+    if isOpen:
+        window.destroy()
+        isOpen = False
 
-listener = keyboard.GlobalHotKeys({
-    '<ctrl>+<alt>+k': onActivate
+def onKeyPress(key):
+    if key == keyboard.Key.esc:
+        onDeactivate()
+
+def onHotkeyPress():
+    onActivate()
+
+hotkey_listener = keyboard.GlobalHotKeys({
+    '<ctrl>+<alt>+k': onHotkeyPress
 })
 
-listener.start()
+key_listener = keyboard.Listener(on_press=onKeyPress)
+
+hotkey_listener.start()
+key_listener.start()
 
 root = tk.Tk()
 root.withdraw()
