@@ -56,18 +56,35 @@ import os
 import openai
 import requests
 
-openai.api_key = "OPENAI_KEY"
+openai.api_key = os.getenv("OPENAI_KEY")
 
-response = openai.Completion.create(
-  model="text-davinci-003",
-  prompt="The following is a conversation with an AI assistant. The assistant is helpful, creative, clever, and very friendly.\n\nHuman: Hello, who are you?\nAI: I am an AI created by OpenAI. How can I help you today?\nHuman: I'd like to cancel my subscription.\nAI:",
-  temperature=0.9,
-  max_tokens=150,
-  top_p=1,
-  frequency_penalty=0.0,
-  presence_penalty=0.6,
-  stop=[" Human:", " AI:"]
-)
+def ask_openai(prompt):
 
-response.to_dict()
-print(response.to_dict())
+    # Ask Azure OpenAI
+    response = openai.Completion.create(
+      model="text-davinci-003",
+      prompt=prompt,
+      temperature=0.9,
+      max_tokens=150,
+      top_p=1,
+      frequency_penalty=0.0,
+      presence_penalty=0.6,
+      stop=[" Human:", " AI:"]
+    )
+    text = response['choices'][0]['text'].replace('\n', ' ').replace(' .', '.').strip()
+    print('Azure OpenAI response:' + text)
+
+def chat_with_open_ai():
+    while True:
+        print("Azure OpenAI is listening. Say 'Stop' or press Ctrl-Z to end the conversation.")
+        try:
+            ask_openai(input())
+        except EOFError:
+            break
+
+# Main
+
+try:
+    chat_with_open_ai()
+except Exception as err:
+    print("Encountered exception. {}".format(err))
